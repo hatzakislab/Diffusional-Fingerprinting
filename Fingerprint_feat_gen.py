@@ -7,7 +7,6 @@ import matplotlib
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from statbib import Chi2Fit
 from probfit import Chi2Regression
 from iminuit import Minuit
 import inspect
