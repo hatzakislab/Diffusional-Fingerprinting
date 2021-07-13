@@ -1,4 +1,3 @@
-
 """
 This script shows how functions in this folder may be utilized to compute diffusional
 fingerprints and analyze results. The first part simulates four types of
@@ -21,7 +20,7 @@ from RandomWalkSims import (
 import matplotlib.pyplot as plt
 import matplotlib
 from Fingerprint_feat_gen import ThirdAppender
-from MLGeneral import ML,histogram
+from MLGeneral import ML, histogram
 import pickle
 import os
 from pomegranate import *
@@ -31,9 +30,10 @@ import numpy as np
 from sklearn.metrics import confusion_matrix
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.model_selection import train_test_split
+from matplotlib.colors import LinearSegmentedColormap
 
 """Generate a data set to compute fingerprints for ONLY UNCOMMENT IF YOU WISH TO SIMULATE NEW DATA AND FINGERPRINTS"""
-# n_per_diff = 1000
+# n_per_diff = 200
 #
 # dt = 1 / 30  # s
 # D = 9.02  # µm^2/s
@@ -51,68 +51,64 @@ from sklearn.model_selection import train_test_split
 # print("\tconfined done")
 # anomalous_diff = Gen_anomalous_diff(D, dt, alphas, sigmaAD, NsAD)
 # print("\tanomalous done")
-# outdat = []+normal_diff+directed_diff+confined_diff+anomalous_diff
-# #0 is normal diff
-# #1 is directed motion
-# #2 is confined diffusion
-# #3 is anomalous diffusion
-# labels = [0]*n_per_diff+[1]*n_per_diff+[2]*n_per_diff+[3]*n_per_diff
-# with open('X.pkl', 'wb') as f:
+# outdat = [] + normal_diff + directed_diff + confined_diff + anomalous_diff
+# # 0 is normal diff
+# # 1 is directed motion
+# # 2 is confined diffusion
+# # 3 is anomalous diffusion
+# labels = [0] * n_per_diff + [1] * n_per_diff + [2] * n_per_diff + [3] * n_per_diff
+# with open("X.pkl", "wb") as f:
 #     pickle.dump(outdat, f)
-# with open('y.pkl', 'wb') as f:
+# with open("y.pkl", "wb") as f:
 #     pickle.dump(labels, f)
 
 """Compute fingerprints"""
-import pickle
+if not os.path.isfile("X_fingerprints.npy"):
+    import pickle
 
-print("Generating fingerprints")
-with open("X.pkl", "rb") as f:
-    traces = pickle.load(f)
-if not os.path.isfile("HMMjson"):
-    steplength = []
+    print("Generating fingerprints")
+    with open("X.pkl", "rb") as f:
+        traces = pickle.load(f)
+    if not os.path.isfile("HMMjson"):
+        steplength = []
+        for t in traces:
+            x, y = t[:, 0], t[:, 1]
+            steplength.append(np.sqrt((x[1:] - x[:-1]) ** 2 + (y[1:] - y[:-1]) ** 2))
+        print("fitting HMM")
+        model = HiddenMarkovModel.from_samples(
+            NormalDistribution, n_components=4, X=steplength, n_jobs=3, verbose=True
+        )
+        #
+        print(model)
+        model.bake()
+        print("Saving HMM model")
+
+        s = model.to_json()
+        f = open("HMMjson", "w")
+        f.write(s)
+        f.close()
+    else:
+        print("loading HMM model")
+        s = "HMMjson"
+        file = open(s, "r")
+        json_s = ""
+        for line in file:
+            json_s += line
+        model = HiddenMarkovModel.from_json(json_s)
+        print(model)
+    d = []
     for t in traces:
         x, y = t[:, 0], t[:, 1]
-        steplength.append(np.sqrt((x[1:] - x[:-1]) ** 2 + (y[1:] - y[:-1]) ** 2))
-    print("fitting HMM")
-    model = HiddenMarkovModel.from_samples(
-        NormalDistribution,
-        n_components=4,
-        X=steplength,
-        n_jobs=3,
-        verbose=True,
-    )
-    #
-    print(model)
-    model.bake()
-    print("Saving HMM model")
+        SL = np.sqrt((x[1:] - x[:-1]) ** 2 + (y[1:] - y[:-1]) ** 2)
+        d.append((x, y, SL))
 
-    s = model.to_json()
-    f = open("HMMjson", "w")
-    f.write(s)
-    f.close()
-else:
-    print("loading HMM model")
-    s = "HMMjson"
-    file = open(s, "r")
-    json_s = ""
-    for line in file:
-        json_s += line
-    model = HiddenMarkovModel.from_json(json_s)
-    print(model)
-d = []
-for t in traces:
-    x, y = t[:, 0], t[:, 1]
-    SL = np.sqrt((x[1:] - x[:-1]) ** 2 + (y[1:] - y[:-1]) ** 2)
-    d.append((x, y, SL))
+    p = mp.Pool(mp.cpu_count())
+    print("Computing fingerprints")
+    print(f"Running {len(traces)} traces")
+    func = partial(ThirdAppender, model=model)  #
 
-
-p = mp.Pool(mp.cpu_count())
-print("Computing fingerprints")
-print(f"Running {len(traces)} traces")
-func = partial(ThirdAppender, model=model)  #
-
-train_result = p.map(func, d)
-np.save("X_fingerprints", train_result)
+    train_result = p.map(func, d)
+    np.save("X_fingerprints", train_result)
 
 """Train classifiers to obtain insights"""
 
@@ -213,14 +209,20 @@ fig.savefig("Lindisc.pdf")
 
 print("Computing ranked feature-plot between normal and directed motion")
 
-Xdat_new,ydat_new = Xdat[(ydat=="CD")|(ydat=="DM")],ydat[(ydat=="CD")|(ydat=="DM")]
+Xdat_new, ydat_new = (
+    Xdat[(ydat == "CD") | (ydat == "DM")],
+    ydat[(ydat == "CD") | (ydat == "DM")],
+)
 
 learn = ML(Xdat_new, ydat_new)
 
 learn.Feature_rank(numfeats=3)
 from matplotlib.lines import Line2D
-custom_lines = [Line2D([0], [0], color="darkred", lw=4),
-                Line2D([0], [0], color="dimgrey", lw=4),]
-plt.legend(custom_lines, ['Confined diffusion', 'Directed motion'],loc="upper center")
+
+custom_lines = [
+    Line2D([0], [0], color="darkred", lw=4),
+    Line2D([0], [0], color="dimgrey", lw=4),
+]
+plt.legend(custom_lines, ["Confined diffusion", "Directed motion"], loc="upper center")
 plt.tight_layout()
 plt.savefig("Feature_ranking")
