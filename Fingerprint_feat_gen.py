@@ -538,7 +538,4 @@ def ThirdAppender(d, model):
         else it returns "Not in"
     """
     x, y, SL = d
-    try:
-        return GetFeatures(x, y, SL, model)
-    except:
-        return ["Not in"]
+    return GetFeatures(x, y, SL, model)
