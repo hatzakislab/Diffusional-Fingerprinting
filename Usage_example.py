@@ -32,35 +32,37 @@ from mpl_toolkits.mplot3d import Axes3D
 from sklearn.model_selection import train_test_split
 from matplotlib.colors import LinearSegmentedColormap
 
-"""Generate a data set to compute fingerprints for ONLY UNCOMMENT IF YOU WISH TO SIMULATE NEW DATA AND FINGERPRINTS"""
-# n_per_diff = 200
-#
-# dt = 1 / 30  # s
-# D = 9.02  # µm^2/s
-# print("Generating data")
-# params_matrix = Get_params(n_per_diff, dt, D)
-# NsND, NsAD, NsCD, NsDM = [params_matrix[:, i].astype(int) for i in range(4)]
-#
-# r_cs, vs, alphas, sigmaND, sigmaAD, sigmaCD, sigmaDM = params_matrix[:, 6:].T
-#
-# normal_diff = Gen_normal_diff(D, dt, sigmaND, NsND)
-# print("\tnormal done")
-# directed_diff = Gen_directed_diff(D, dt, vs, sigmaDM, NsDM)
-# print("\tdirected done")
-# confined_diff = Gen_confined_diff(D, dt, r_cs, sigmaCD, NsCD)
-# print("\tconfined done")
-# anomalous_diff = Gen_anomalous_diff(D, dt, alphas, sigmaAD, NsAD)
-# print("\tanomalous done")
-# outdat = [] + normal_diff + directed_diff + confined_diff + anomalous_diff
-# # 0 is normal diff
-# # 1 is directed motion
-# # 2 is confined diffusion
-# # 3 is anomalous diffusion
-# labels = [0] * n_per_diff + [1] * n_per_diff + [2] * n_per_diff + [3] * n_per_diff
-# with open("X.pkl", "wb") as f:
-#     pickle.dump(outdat, f)
-# with open("y.pkl", "wb") as f:
-#     pickle.dump(labels, f)
+"""Generate a data set to compute fingerprints for """
+if not os.path.isfile("X.pkl") and os.path.isfile("y.pkl"):
+    n_per_diff = 200
+
+    dt = 1 / 30  # s
+    D = 9.02  # µm^2/s
+    print("Generating data")
+    params_matrix = Get_params(n_per_diff, dt, D)
+    NsND, NsAD, NsCD, NsDM = [params_matrix[:, i].astype(int) for i in range(4)]
+
+    r_cs, vs, alphas, sigmaND, sigmaAD, sigmaCD, sigmaDM = params_matrix[:, 6:].T
+
+    normal_diff = Gen_normal_diff(D, dt, sigmaND, NsND)
+    print("\tnormal done")
+    directed_diff = Gen_directed_diff(D, dt, vs, sigmaDM, NsDM)
+    print("\tdirected done")
+    confined_diff = Gen_confined_diff(D, dt, r_cs, sigmaCD, NsCD)
+    print("\tconfined done")
+    anomalous_diff = Gen_anomalous_diff(D, dt, alphas, sigmaAD, NsAD)
+    print("\tanomalous done")
+    outdat = [] + normal_diff + directed_diff + confined_diff + anomalous_diff
+    # 0 is normal diff
+    # 1 is directed motion
+    # 2 is confined diffusion
+    # 3 is anomalous diffusion
+    labels = [0] * n_per_diff + [1] * n_per_diff + [2] * n_per_diff + [3] * n_per_diff
+    with open("X.pkl", "wb") as f:
+        pickle.dump(outdat, f)
+    with open("y.pkl", "wb") as f:
+        pickle.dump(labels, f)
+
 
 """Compute fingerprints"""
 if not os.path.isfile("X_fingerprints.npy"):
@@ -111,11 +113,9 @@ if not os.path.isfile("X_fingerprints.npy"):
     np.save("X_fingerprints", train_result)
 
 """Train classifiers to obtain insights"""
-
 Xdat = np.load("X_fingerprints.npy")
 with open("y.pkl", "rb") as f:
     ydat = pickle.load(f)
-
 conv_dict = dict(zip(range(4), ["ND", "DM", "CD", "AD"]))
 ydat = np.array([conv_dict[i] for i in ydat])
 learn = ML(Xdat, ydat)
@@ -203,6 +203,7 @@ for i, l, c in zip(
         normalize=True,
         elinewidth=2,
         capsize=2,
+        remove0=True,
         legend=l,
     )
 fig.savefig("Lindisc.pdf")

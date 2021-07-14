@@ -94,6 +94,7 @@ def Chi2Fit(
         minuit.print_level = print_level
     else:
         minuit = Minuit(chi2_object)
+    minuit.errordef =1
     minuit.migrad()
     chi2 = minuit.fval
     Ndof = len(x) - len(guesses)
@@ -534,8 +535,6 @@ def ThirdAppender(d, model):
     -------
     ndarray or str
         Returns the features describing the diffusional fingerprint
-        if the computation did not throw an error,
-        else it returns "Not in"
     """
     x, y, SL = d
     return GetFeatures(x, y, SL, model)
