@@ -216,6 +216,8 @@ def histogram(
         if ax is None:
             plt.show()
     return x, y, sy
+
+
 def radarplot(values, colors, labels, savefig=False, show=True):
     #!/usr/bin/env python
     # -*- coding: utf-8 -*-
@@ -1381,6 +1383,7 @@ class ML:
             self.Accuracyvar = scores.std()
         if ret:
             return fpr, tpr, thresholds, [x0, y0, sy0], [x1, y1, sy1]
+
     def Predict(
         self,
         inputML,
@@ -1473,8 +1476,8 @@ class ML:
         from matplotlib.colors import LinearSegmentedColormap
 
         colors = [
-            matplotlib.colors.to_rgb("darkred"),
             matplotlib.colors.to_rgb("dimgrey"),
+            matplotlib.colors.to_rgb("darkred"),
         ]  # R -> G -> B
         cbins = 2  # Discretizes the interpolation into bins
         cmap_name = "my_list"
