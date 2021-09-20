@@ -1476,8 +1476,8 @@ class ML:
         from matplotlib.colors import LinearSegmentedColormap
 
         colors = [
-            matplotlib.colors.to_rgb("dimgrey"),
             matplotlib.colors.to_rgb("darkred"),
+            matplotlib.colors.to_rgb("dimgrey"),
         ]  # R -> G -> B
         cbins = 2  # Discretizes the interpolation into bins
         cmap_name = "my_list"
