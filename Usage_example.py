@@ -1,3 +1,4 @@
+# %%
 """
 This script shows how functions in this folder may be utilized to compute diffusional
 fingerprints and analyze results. The first part simulates four types of
@@ -32,11 +33,13 @@ from mpl_toolkits.mplot3d import Axes3D
 from sklearn.model_selection import train_test_split
 from matplotlib.colors import LinearSegmentedColormap
 
+# decide if you want a temporal resolution for relevant D estimation
+dt = 1 / 30  # s 
+
 """Generate a data set to compute fingerprints for """
 if not os.path.isfile("X.pkl") and os.path.isfile("y.pkl"):
     n_per_diff = 200
 
-    dt = 1 / 30  # s
     D = 9.02  # µm^2/s
     print("Generating data")
     params_matrix = Get_params(n_per_diff, dt, D)
@@ -65,7 +68,7 @@ if not os.path.isfile("X.pkl") and os.path.isfile("y.pkl"):
 
 
 """Compute fingerprints"""
-if not os.path.isfile("X_fingerprints.npy"):
+if os.path.isfile("X_fingerprints.npy"):
     import pickle
 
     print("Generating fingerprints")
@@ -102,7 +105,7 @@ if not os.path.isfile("X_fingerprints.npy"):
     for t in traces:
         x, y = t[:, 0], t[:, 1]
         SL = np.sqrt((x[1:] - x[:-1]) ** 2 + (y[1:] - y[:-1]) ** 2)
-        d.append((x, y, SL))
+        d.append((x, y, SL, dt))
 
     p = mp.Pool(mp.cpu_count())
     print("Computing fingerprints")
@@ -110,6 +113,7 @@ if not os.path.isfile("X_fingerprints.npy"):
     func = partial(ThirdAppender, model=model)  #
 
     train_result = p.map(func, d)
+    print(train_result[0][:2])
     np.save("X_fingerprints", train_result)
 
 """Train classifiers to obtain insights"""

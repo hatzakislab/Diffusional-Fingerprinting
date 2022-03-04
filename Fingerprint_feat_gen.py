@@ -201,7 +201,7 @@ def msd(x, y, frac):
     return np.array(msd)
 
 
-def Scalings(msds):
+def Scalings(msds, dt):
     """Fit mean squared displacements to a power law.
 
     Parameters
@@ -220,7 +220,7 @@ def Scalings(msds):
         return 4 * D * (x) ** alpha
 
     params, errs, Pval = Chi2Fit(
-        np.arange(1, len(msds) + 1),
+        np.arange(1, len(msds) + 1)*dt,
         msds,
         1e-10 * np.ones(len(msds)),
         power,
@@ -231,7 +231,7 @@ def Scalings(msds):
     )
     sy = np.std(msds - power(np.arange(1, len(msds) + 1), *params))
     params, errs, Pval = Chi2Fit(
-        np.arange(1, len(msds) + 1),
+        np.arange(1, len(msds) + 1)*dt,
         msds,
         sy * np.ones(len(msds)),
         power,
@@ -472,7 +472,7 @@ def GetStates(SL, model):
     return newstates, model
 
 
-def GetFeatures(x, y, SL, model):
+def GetFeatures(x, y, SL, dt, model):
     """Compute the diffusional fingerprint for a trajectory.
 
     Parameters
@@ -494,7 +494,7 @@ def GetFeatures(x, y, SL, model):
     """
     out = msd(x, y, 0.5)
     maxpair = GetMax(x, y)
-    beta, alpha, pval = Scalings(out)
+    beta, alpha, pval = Scalings(out, dt)
     states, model = GetStates(SL, model)
 
     t0, t1, t2, t3 = Time_in(states)
@@ -536,5 +536,5 @@ def ThirdAppender(d, model):
     ndarray or str
         Returns the features describing the diffusional fingerprint
     """
-    x, y, SL = d
+    x, y, SL, dt = d
     return GetFeatures(x, y, SL, model)
