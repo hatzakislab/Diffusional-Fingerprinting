@@ -537,4 +537,4 @@ def ThirdAppender(d, model):
         Returns the features describing the diffusional fingerprint
     """
     x, y, SL, dt = d
-    return GetFeatures(x, y, SL, model)
+    return GetFeatures(x, y, SL, dt, model)
