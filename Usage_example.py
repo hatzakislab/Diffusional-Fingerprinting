@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
 
     """Compute fingerprints"""
-    if os.path.isfile("X_fingerprints.npy"):
+    if not os.path.isfile("X_fingerprints.npy"):
         import pickle
 
         print("Generating fingerprints")
