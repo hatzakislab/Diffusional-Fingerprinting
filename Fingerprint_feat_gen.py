@@ -201,6 +201,22 @@ def msd(x, y, frac):
     return np.array(msd)
 
 
+def Scalings(msds, dt):
+    """Fit mean squared displacements to a power law.
+
+    Parameters
+    ----------
+    msds : list-like
+        mean squared displacenemts.
+
+    Returns
+    -------
+    tuple of length 3
+        The first index is the fitted generalized diffusion constant,
+        the second is the scaling exponent alpha, and the final is the pvalue for the fit.
+
+    """
+
     def power(x, D, alpha, offset):
         return 4 * D * (x) ** alpha + offset
 
