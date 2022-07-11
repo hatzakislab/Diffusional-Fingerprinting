@@ -108,12 +108,11 @@ if __name__ == '__main__':
             SL = np.sqrt((x[1:] - x[:-1]) ** 2 + (y[1:] - y[:-1]) ** 2)
             d.append((x, y, SL, dt))
 
-        p = mp.Pool(mp.cpu_count())
         print("Computing fingerprints")
         print(f"Running {len(traces)} traces")
         func = partial(ThirdAppender, model=model)  #
-
-        train_result = p.map(func, d)
+        with mp.Pool(mp.cpu_count()) as p:
+            train_result = p.map(func, d)        
         print(train_result[0][:2])
         np.save("X_fingerprints", train_result)
 
