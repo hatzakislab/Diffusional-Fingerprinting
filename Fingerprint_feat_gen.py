@@ -201,44 +201,33 @@ def msd(x, y, frac):
     return np.array(msd)
 
 
-def Scalings(msds, dt):
-    """Fit mean squared displacements to a power law.
-
-    Parameters
-    ----------
-    msds : list-like
-        mean squared displacenemts.
-
-    Returns
-    -------
-    tuple of length 3
-        The first index is the fitted generalized diffusion constant,
-        the second is the scaling exponent alpha, and the final is the pvalue for the fit.
-
-    """
-    def power(x, D, alpha):
-        return 4 * D * (x) ** alpha
+def power(x, D, alpha, offset):
+        return 4 * D * (x) ** alpha + offset
 
     params, errs, Pval = Chi2Fit(
-        np.arange(1, len(msds) + 1)*dt,
+        np.arange(1, len(msds) + 1) * dt,
         msds,
         1e-10 * np.ones(len(msds)),
         power,
         plot=False,
-        D=1,
+        D=np.sqrt(msds[0]) / (4 * dt),
         alpha=1,
-        limit_alpha=(-10, 10),
+        offset=0.001,
+        limit_offset=(0, None),
+        limit_alpha=(0.001, 10),
     )
-    sy = np.std(msds - power(np.arange(1, len(msds) + 1), *params))
+    sy = np.std(msds - power(np.arange(1, len(msds) + 1) * dt, *params))
     params, errs, Pval = Chi2Fit(
-        np.arange(1, len(msds) + 1)*dt,
+        np.arange(1, len(msds) + 1) * dt,
         msds,
         sy * np.ones(len(msds)),
         power,
         plot=False,
-        D=1,
+        D=np.sqrt(msds[0]) / (4 * dt),
+        offset=0.001,
         alpha=1,
-        limit_alpha=(-10, 10),
+        limit_offset=(0, None),
+        limit_alpha=(0.001, 10),
     )
     return params[0], params[1], Pval
 
