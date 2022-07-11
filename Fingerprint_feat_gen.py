@@ -201,7 +201,7 @@ def msd(x, y, frac):
     return np.array(msd)
 
 
-def power(x, D, alpha, offset):
+    def power(x, D, alpha, offset):
         return 4 * D * (x) ** alpha + offset
 
     params, errs, Pval = Chi2Fit(
