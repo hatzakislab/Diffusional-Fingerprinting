@@ -263,7 +263,7 @@ def Scalings(msds, dt):
         return 4 * D * (x) ** alpha + offset
 
     from scipy.optimize import curve_fit
-    Pval = 1
+    
     params, pcov = curve_fit(power, np.arange(1,len(msds)+1)*dt, msds, 
                              p0=[msds[0] / (4 * dt),1], 
                              max_nfev=100000, bounds=[[0.0000001,0.],[np.inf,10]], 
