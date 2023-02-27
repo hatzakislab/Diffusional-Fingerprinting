@@ -201,6 +201,48 @@ def msd(x, y, frac):
     return np.array(msd)
 
 
+# def Scalings(msds, dt):
+#     """Fit mean squared displacements to a power law.
+
+#     Parameters
+#     ----------
+#     msds : list-like
+#         mean squared displacenemts.
+
+#     Returns
+#     -------
+#     tuple of length 3
+#         The first index is the fitted generalized diffusion constant,
+#         the second is the scaling exponent alpha, and the final is the pvalue for the fit.
+
+#     """
+#     def power(x, D, alpha):
+#         return 4 * D * (x) ** alpha
+
+#     params, errs, Pval = Chi2Fit(
+#         np.arange(1, len(msds) + 1)*dt,
+#         msds,
+#         1e-10 * np.ones(len(msds)),
+#         power,
+#         plot=False,
+#         D=1,
+#         alpha=1,
+#         limit_alpha=(-10, 10),
+#     )
+#     sy = np.std(msds - power(np.arange(1, len(msds) + 1), *params))
+#     params, errs, Pval = Chi2Fit(
+#         np.arange(1, len(msds) + 1)*dt,
+#         msds,
+#         sy * np.ones(len(msds)),
+#         power,
+#         plot=False,
+#         D=1,
+#         alpha=1,
+#         limit_alpha=(-10, 10),
+#     )
+#     return params[0], params[1], Pval
+
+
 def Scalings(msds, dt):
     """Fit mean squared displacements to a power law.
 
@@ -219,27 +261,22 @@ def Scalings(msds, dt):
     def power(x, D, alpha):
         return 4 * D * (x) ** alpha
 
-    params, errs, Pval = Chi2Fit(
-        np.arange(1, len(msds) + 1)*dt,
-        msds,
-        1e-10 * np.ones(len(msds)),
-        power,
-        plot=False,
-        D=1,
-        alpha=1,
-        limit_alpha=(-10, 10),
-    )
-    sy = np.std(msds - power(np.arange(1, len(msds) + 1), *params))
-    params, errs, Pval = Chi2Fit(
-        np.arange(1, len(msds) + 1)*dt,
-        msds,
-        sy * np.ones(len(msds)),
-        power,
-        plot=False,
-        D=1,
-        alpha=1,
-        limit_alpha=(-10, 10),
-    )
+    from scipy.optimize import curve_fit
+    Pval = 1
+    params, pcov = curve_fit(power, np.arange(1,len(msds)+1)*dt, msds, 
+                             p0=[msds[0] / (4 * dt),1], 
+                             max_nfev=100000, bounds=[[0.0000001,0.],[np.inf,10]], 
+                             method='trf')
+    r = msds - power(np.arange(1,len(msds)+1)*dt, *params)
+
+    params, pcov = curve_fit(power, np.arange(1,len(msds)+1)*dt, msds, sigma=np.repeat(np.std(r, ddof=1), len(msds)),
+                             p0=[msds[0] / (4 * dt),1], 
+                             max_nfev=100000, bounds=[[0.0000001,0.],[np.inf,10]], 
+                             method='trf')
+
+    Chival = r**2/np.var(r, ddof=1)
+    Pval = stats.chi2.sf(np.sum(Chival), len(msds)-len(params))
+
     return params[0], params[1], Pval
 
 

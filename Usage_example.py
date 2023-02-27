@@ -25,13 +25,14 @@ from MLGeneral import ML, histogram
 import pickle
 import os
 from pomegranate import *
-import multiprocessing as mp
 from functools import partial
 import numpy as np
+# import multiprocess as mp
 from sklearn.metrics import confusion_matrix
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.model_selection import train_test_split
 from matplotlib.colors import LinearSegmentedColormap
+from tqdm import tqdm
 
 if __name__ == '__main__':
     # decide if you want a temporal resolution for relevant D estimation
@@ -108,13 +109,14 @@ if __name__ == '__main__':
             SL = np.sqrt((x[1:] - x[:-1]) ** 2 + (y[1:] - y[:-1]) ** 2)
             d.append((x, y, SL, dt))
 
-        p = mp.Pool(mp.cpu_count())
+        #p = mp.Pool(mp.cpu_count())
         print("Computing fingerprints")
         print(f"Running {len(traces)} traces")
-        func = partial(ThirdAppender, model=model)  #
+        #func = partial(ThirdAppender, model=model)  #
 
-        train_result = p.map(func, d)
-        print(train_result[0][:2])
+        train_result = []
+        for t in tqdm(d):
+            train_result.append(ThirdAppender(t, model=model)) 
         np.save("X_fingerprints", train_result)
 
     """Train classifiers to obtain insights"""
@@ -233,4 +235,3 @@ if __name__ == '__main__':
     plt.tight_layout()
     plt.savefig("Feature_ranking")
 
-# %%

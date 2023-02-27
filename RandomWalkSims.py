@@ -6,7 +6,7 @@ Henrik Dahl Pinholt
 import numpy as np
 from tqdm import tqdm
 from fbm import fgn, times
-import multiprocess as mp
+# import multiprocess as mp
 import matplotlib.pyplot as plt
 
 
@@ -319,8 +319,9 @@ def Gen_confined_diff(D, dt, r_cs, sigmaCD, Ns, withlocerr=True, multiprocess=Tr
     args = [(D, dt, r, sig, N) for r, sig, N in zip(r_cs, sigmaCD, Ns)]
 
     if multiprocess:
-        with mp.Pool(mp.cpu_count()) as p:
-            traces = p.map(get_trace, args)
+        print('closed mulitprocessing')
+        # with mp.Pool(mp.cpu_count()) as p:
+        #     traces = p.map(get_trace, args)
     else:
         traces = []
         for i in range(len(Ns)):
