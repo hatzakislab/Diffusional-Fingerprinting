@@ -7,8 +7,8 @@ import matplotlib
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from probfit import Chi2Regression
-from iminuit import Minuit
+# from probfit import Chi2Regression
+# from iminuit import Minuit
 import inspect
 import scipy.stats as stats
 
