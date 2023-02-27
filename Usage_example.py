@@ -70,7 +70,7 @@ if __name__ == '__main__':
 
 
     """Compute fingerprints"""
-    if os.path.isfile("X_fingerprints.npy"):
+    if not os.path.isfile("X_fingerprints.npy"):
         import pickle
 
         print("Generating fingerprints")
@@ -117,6 +117,7 @@ if __name__ == '__main__':
         train_result = []
         for t in tqdm(d):
             train_result.append(ThirdAppender(t, model=model)) 
+
         np.save("X_fingerprints", train_result)
 
     """Train classifiers to obtain insights"""

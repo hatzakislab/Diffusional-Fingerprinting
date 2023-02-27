@@ -258,8 +258,9 @@ def Scalings(msds, dt):
         the second is the scaling exponent alpha, and the final is the pvalue for the fit.
 
     """
-    def power(x, D, alpha):
-        return 4 * D * (x) ** alpha
+
+    def power(x, D, alpha, offset):
+        return 4 * D * (x) ** alpha + offset
 
     from scipy.optimize import curve_fit
     Pval = 1
@@ -276,7 +277,6 @@ def Scalings(msds, dt):
 
     Chival = r**2/np.var(r, ddof=1)
     Pval = stats.chi2.sf(np.sum(Chival), len(msds)-len(params))
-
     return params[0], params[1], Pval
 
 
